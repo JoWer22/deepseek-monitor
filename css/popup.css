@@ -1,0 +1,320 @@
+:root {
+  --primary: #6e48aa;
+  --primary-light: #9d65d9;
+  --text: #2d3748;
+  --text-light: #718096;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --success: #48bb78;
+  --warning: #ed8936;
+  --error: #f56565;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #8a63d2;
+    --primary-light: #a781e8;
+    --text: #f7fafc;
+    --text-light: #cbd5e0;
+    --bg: #1a202c;
+    --card-bg: #2d3748;
+    --border: #4a5568;
+  }
+}
+
+/* 基础样式 */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  width: 300px;
+  padding: 0;
+  margin: 0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.view {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 头部样式 */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  width: 20px;
+  height: 20px;
+  fill: var(--primary);
+}
+/* 卡片样式 */
+.balance-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.balance-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.amount {
+  font-size: 32px;
+  font-weight: 700;
+  font-feature-settings: "tnum";
+}
+
+.currency {
+  font-size: 16px;
+  color: var(--text-light);
+}
+
+.balance-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.value {
+  font-weight: 500;
+  font-feature-settings: "tnum";
+}
+
+/* 按钮样式 */
+.icon-btn {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--primary);
+}
+
+.refresh-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: var(--primary-light);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.primary-btn:hover {
+  background: var(--primary-light);
+}
+
+/* 设置组样式 */
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.setting-group label {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.setting-group input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* 状态消息 */
+.status-message {
+  font-size: 14px;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.success {
+  background: rgba(72, 187, 120, 0.1);
+  color: var(--success);
+}
+
+.error {
+  background: rgba(245, 101, 101, 0.1);
+  color: var(--error);
+}
+
+.last-updated {
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+  margin: 8px 0;
+}
+
+/* 加载动画 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+/* 底部链接区域 */
+.app-footer {
+  margin-top: auto;
+  padding: 12px 16px 8px;
+  border-top: 1px solid var(--border);
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--primary);
+  background: rgba(110, 72, 170, 0.1);
+}
+
+.footer-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.github-link:hover {
+  color: #24292e;
+}
+
+.email-link:hover {
+  color: #d44638;
+}
+
+.version-info {
+  font-size: 11px;
+  color: var(--text-light);
+  opacity: 0.7;
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .github-link:hover {
+    color: #f0f6fc;
+  }
+  
+  .footer-link:hover {
+    background: rgba(138, 99, 210, 0.1);
+  }
+}
+/* 添加底部链接交互样式 */
+.email-link {
+  cursor: pointer;
+}
+
+.email-link.copied {
+  color: var(--success);
+}
+
+.divider {
+  color: var(--text-light);
+  user-select: none;
+}
