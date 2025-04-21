@@ -3,13 +3,13 @@
 ![插件截图](assets/screenshot.png)
 
 ## 版本说明 (Changelog)
-#### v1.0.1
+## v1.0.1
 🎉 初始版本发布
-实时显示 DeepSeek API 余额。
-支持手动刷新余额。
-支持设置 API Key 和刷新间隔。
-自动刷新余额数据。
-提供友好的错误提示和状态显示
+- 实时显示 DeepSeek API 余额。
+- 支持手动刷新余额。
+- 支持设置 API Key 和刷新间隔。
+- 自动刷新余额数据。
+- 提供友好的错误提示和状态显示
 
 ## 📦 发布版本（Releases）
 👉 [releases](https://github.com/JoWer22/deepseek-monitor/releases)
