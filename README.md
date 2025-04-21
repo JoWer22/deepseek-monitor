@@ -1,4 +1,4 @@
-# 🔍 DeepSeek API 余额监控插件
+# 🔍 DeepSeek API 余额监控浏览器插件
 
 ![插件截图](assets/screenshot.png)
 
