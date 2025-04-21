@@ -49,10 +49,10 @@ chrome.runtime.onInstalled.addListener((details) => {
   startAutoRefresh();
 });
 
-chrome.runtime.onStartup.addListener(() => {
+chrome.runtime.onStartup.addListener(async () => {
   console.log('扩展启动，重新初始化...');
+  await generateEncryptionKey();
   startAutoRefresh();
-  generateEncryptionKey();
 });
 
 // 清理旧的明文 API Key
@@ -283,8 +283,8 @@ async function decryptApiKey(encrypted, iv) {
 async function storeApiKey(apiKey) {
   const { encrypted, iv } = await encryptApiKey(apiKey);
   chrome.storage.local.set({
-    apiKey: Array.from(encrypted),
-    iv: Array.from(iv)
+    apiKey: Array.from(encrypted), // 确保存储为数组格式
+    iv: Array.from(iv) // 确保存储为数组格式
   });
   console.log('API Key 已加密并存储');
 }
@@ -293,11 +293,14 @@ async function storeApiKey(apiKey) {
 async function getApiKey() {
   const { apiKey, iv } = await chrome.storage.local.get(['apiKey', 'iv']);
   if (!apiKey || !iv) {
+    console.error('未找到加密的 API Key 或 IV');
     return null;
   }
 
   try {
+    await ensureEncryptionKeyInitialized(); // 确保密钥已初始化
     const decrypted = await decryptApiKey(new Uint8Array(apiKey), new Uint8Array(iv));
+    // console.log('API Key 解密成功:', decrypted);
     return decrypted;
   } catch (error) {
     console.error('解密 API Key 失败:', error);
@@ -317,6 +320,13 @@ async function sendMessage(action, data = {}) {
       }
     });
   });
+}
+
+async function ensureEncryptionKeyInitialized() {
+  if (!encryptionKey) {
+    console.warn('加密密钥未初始化，正在生成...');
+    await generateEncryptionKey();
+  }
 }
 
 generateEncryptionKey();
