@@ -1,5 +1,5 @@
 # 🔍 DeepSeek API 余额监控（浏览器插件）
-#### 自己用AI捣鼓出来的小玩意，时间上花了1个小时调整。
+#### 自己用AI捣鼓出来的小玩意，花了点时间调整。
 ![插件截图](assets//screenshot.png)
 
 ## 版本说明 (Changelog)
