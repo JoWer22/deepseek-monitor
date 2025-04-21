@@ -1,81 +1,89 @@
 class BalanceController {
   constructor() {
-    this.cachedData = null;
-    this.isLoading = false;
-    this.initElements();
-    this.initEventListeners();
-    this.loadInitialData();
-  }
-
-  initElements() {
     this.elements = {
+      apiKeyInput: document.getElementById('apiKeyInput'),
+      apiKeyStatus: document.getElementById('apiKeyStatus'),
+      refreshInterval: document.getElementById('refreshInterval'),
+      saveBtn: document.getElementById('saveBtn'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      settingsStatus: document.getElementById('settingsStatus'),
       balanceAmount: document.getElementById('balanceAmount'),
       toppedUp: document.getElementById('toppedUp'),
       granted: document.getElementById('granted'),
       updateTime: document.getElementById('updateTime'),
-      refreshBtn: document.getElementById('refreshBtn'),
-      settingsBtn: document.getElementById('settingsBtn'),
+      mainView: document.getElementById('mainView'),
       settingsView: document.getElementById('settingsView'),
-      apiKeyInput: document.getElementById('apiKeyInput'),
-      refreshInterval: document.getElementById('refreshInterval'),
-      saveBtn: document.getElementById('saveBtn'),
-      backBtn: document.getElementById('backBtn'),
-      settingsStatus: document.getElementById('settingsStatus')
     };
+
+    // 检查是否有未找到的元素
+    for (const [key, value] of Object.entries(this.elements)) {
+      if (!value) {
+        console.error(`元素未找到: ${key}`);
+      }
+    }
   }
 
-  initEventListeners() {
-    this.elements.refreshBtn.addEventListener('click', () => this.refreshBalance());
-    this.elements.settingsBtn.addEventListener('click', () => this.showSettings());
-    this.elements.backBtn.addEventListener('click', () => this.hideSettings());
-    this.elements.saveBtn.addEventListener('click', () => this.saveSettings());
-  }
-
-  async loadInitialData() {
+  async init() {
     try {
-      const { balance, hasApiKey } = await this.sendMessage('getBalance');
-      this.cachedData = balance || null;
-      
-      if (this.cachedData) {
-        this.updateUI(this.cachedData);
-      }
-      
-      if (!hasApiKey) {
-        this.showError('请先设置API Key', 0);
-        this.showSettings();
+      console.log('初始化开始'); // 调试日志
+      const { apiKey } = await chrome.storage.local.get('apiKey');
+      if (!apiKey) {
+        this.showApiKeyStatus('API Key 未设置', 'error');
+        this.elements.refreshBtn.disabled = true; // 禁用刷新按钮
+        this.updateUI(null); // 清空余额显示
       } else {
-        await this.refreshBalance(true);
+        this.showApiKeyStatus('API Key 已设置', 'success');
+        this.elements.refreshBtn.disabled = false; // 启用刷新按钮
+        await this.refreshBalance(true); // 初始化时刷新余额
       }
+      console.log('初始化完成'); // 调试日志
     } catch (error) {
       console.error('初始化失败:', error);
       this.showError('初始化失败: ' + error.message);
     }
   }
 
+  switchView(view) {
+    const views = [this.elements.mainView, this.elements.settingsView];
+    views.forEach(v => v.style.display = 'none');
+    view.style.display = 'block';
+  }
+
+  showSettings() {
+    this.switchView(this.elements.settingsView);
+  }
+
+  showMainView() {
+    this.switchView(this.elements.mainView);
+  }
+
   async refreshBalance(isInitialLoad = false) {
     if (this.isLoading) return;
-    
+
     try {
       this.isLoading = true;
       this.setLoading(true);
-      
+
       const balance = await this.sendMessage('forceRefresh');
       this.cachedData = balance;
       this.updateUI(balance);
-      
+
       if (!isInitialLoad) {
         this.showSuccess('刷新成功', 2000);
       }
     } catch (error) {
       console.error('刷新失败:', error);
-      
+
       if (error.message.includes('API Key未设置')) {
-        this.showError('请先设置API Key', 0);
+        this.showError('请先设置 API Key', 0);
         this.showSettings();
+      } else if (error.message.includes('网络错误')) {
+        this.showError('网络错误，请检查网络连接');
       } else {
         this.showError('刷新失败: ' + error.message);
       }
-      
+
+      // 显示缓存数据（如果存在）
       if (this.cachedData) {
         this.updateUI(this.cachedData);
       }
@@ -83,6 +91,53 @@ class BalanceController {
       this.isLoading = false;
       this.setLoading(false);
     }
+  }
+
+  async saveSettings() {
+    console.log('保存设置按钮被点击'); // 调试日志
+    const apiKey = this.elements.apiKeyInput.value.trim();
+    let refreshInterval = parseInt(this.elements.refreshInterval.value, 10);
+
+    if (!apiKey) {
+      this.showError('API Key 不能为空');
+      return;
+    }
+
+    if (isNaN(refreshInterval) || refreshInterval < 1 || refreshInterval > 1440) {
+      this.showError('刷新间隔必须在 1 到 1440 分钟之间');
+      return;
+    }
+
+    this.elements.saveBtn.disabled = true;
+
+    try {
+      // 验证 API Key 是否有效
+      const response = await this.sendMessage('validateApiKey', { apiKey });
+      if (!response.success) {
+        throw new Error('API Key 无效，请检查后重试');
+      }
+
+      // 如果验证成功，保存 API Key 和刷新间隔
+      await this.sendMessage('setApiKey', { key: apiKey });
+      await this.sendMessage('setRefreshInterval', { interval: refreshInterval });
+
+      this.showSuccess('设置已保存');
+      this.showApiKeyStatus('API Key 已设置', 'success');
+
+      // 跳转到主视图并刷新余额
+      this.showMainView();
+      await this.refreshBalance();
+    } catch (error) {
+      console.error('保存设置失败:', error);
+      this.showError('保存设置失败: ' + error.message);
+    } finally {
+      this.elements.saveBtn.disabled = false;
+    }
+  }
+
+  showApiKeyStatus(message, type) {
+    this.elements.apiKeyStatus.textContent = message;
+    this.elements.apiKeyStatus.className = `status-message ${type}`;
   }
 
   updateUI(balance) {
@@ -101,69 +156,21 @@ class BalanceController {
       `最后更新: ${new Date(balance.lastUpdated).toLocaleTimeString()}`;
   }
 
-  async showSettings() {
-    try {
-      const { apiKey, refreshInterval } = await chrome.storage.local.get(['apiKey', 'refreshInterval']);
-      this.elements.apiKeyInput.value = apiKey || '';
-      this.elements.refreshInterval.value = refreshInterval || 5;
-      this.elements.settingsView.style.display = 'block';
-      document.getElementById('mainView').style.display = 'none';
-    } catch (error) {
-      console.error('获取设置失败:', error);
-      this.showError('获取设置失败: ' + error.message);
-    }
-  }
-
-  hideSettings() {
-    this.elements.settingsView.style.display = 'none';
-    document.getElementById('mainView').style.display = 'block';
-    this.clearStatus();
-  }
-
-  async saveSettings() {
-    try {
-      this.setLoading(true, '保存中...');
-      
-      const apiKey = this.elements.apiKeyInput.value.trim();
-      const refreshInterval = Math.max(1, Math.min(1440, 
-        parseInt(this.elements.refreshInterval.value) || 5));
-      
-      if (!apiKey) {
-        throw new Error('API Key不能为空');
-      }
-      
-      await this.sendMessage('setApiKey', { key: apiKey });
-      await this.sendMessage('setRefreshInterval', { interval: refreshInterval });
-      
-      this.showSuccess('设置保存成功', 1000);
-      await this.refreshBalance();
-      
-      setTimeout(() => {
-        this.hideSettings();
-      }, 1000);
-    } catch (error) {
-      console.error('保存失败:', error);
-      this.showError('保存失败: ' + error.message);
-    } finally {
-      this.setLoading(false);
-    }
-  }
-
   setLoading(isLoading, text = '加载中...') {
-    const btn = this.elements.refreshBtn;
-    btn.disabled = isLoading;
-    btn.innerHTML = isLoading ? 
-      `<span class="spin">⏳</span> ${text}` : 
-      `🔁 立即刷新`;
+    this.elements.refreshBtn.disabled = isLoading;
+    this.elements.refreshBtn.textContent = isLoading ? text : '立即刷新';
   }
 
-  showSuccess(message, duration = 3000) {
-    const el = this.elements.settingsStatus;
-    el.textContent = message;
-    el.className = 'status-message success';
-    if (duration > 0) {
-      setTimeout(() => this.clearStatus(), duration);
-    }
+  async sendMessage(action, data = {}) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({ action, ...data }, (response) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve(response);
+        }
+      });
+    });
   }
 
   showError(message, duration = 5000) {
@@ -171,57 +178,34 @@ class BalanceController {
     el.textContent = message;
     el.className = 'status-message error';
     if (duration > 0) {
-      setTimeout(() => this.clearStatus(), duration);
+      setTimeout(() => {
+        el.textContent = '';
+        el.className = 'status-message';
+      }, duration);
     }
   }
 
-  clearStatus() {
-    this.elements.settingsStatus.textContent = '';
-    this.elements.settingsStatus.className = 'status-message';
-  }
-
-  async sendMessage(action, data = {}) {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        { action, ...data },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-          } else {
-            resolve(response);
-          }
-        }
-      );
-    });
+  showSuccess(message, duration = 3000) {
+    const el = this.elements.settingsStatus;
+    el.textContent = message;
+    el.className = 'status-message success';
+    if (duration > 0) {
+      setTimeout(() => {
+        el.textContent = '';
+        el.className = 'status-message';
+      }, duration);
+    }
   }
 }
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   const controller = new BalanceController();
-  
-  // 当弹窗重新获得焦点时刷新
-  window.addEventListener('focus', async () => {
-    const mainView = document.getElementById('mainView');
-    if (mainView && mainView.style.display !== 'none') {
-      await controller.refreshBalance();
-    }
-  });
+  controller.init();
 
-  // 邮箱点击复制
-  const emailLink = document.querySelector('.email-link');
-  if (emailLink) {
-    emailLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      navigator.clipboard.writeText('2423129650@qq.com').then(() => {
-        const originalText = emailLink.innerHTML;
-        emailLink.innerHTML = '✓ 已复制';
-        setTimeout(() => {
-          emailLink.innerHTML = originalText;
-        }, 2000);
-      }).catch(err => {
-        console.error('复制失败:', err);
-      });
-    });
-  }
+  // 使用箭头函数绑定事件，确保 `this` 指向正确的实例
+  document.getElementById('saveBtn').addEventListener('click', () => controller.saveSettings());
+  document.getElementById('refreshBtn').addEventListener('click', () => controller.refreshBalance());
+  document.getElementById('settingsBtn').addEventListener('click', () => controller.showSettings());
+  document.getElementById('backBtn').addEventListener('click', () => controller.showMainView());
 });

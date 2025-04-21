@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "DeepSeek Monitor",
   "version": "1.0.1",
-  "description": "实时监控DeepSeek API余额 | GitHub: github.com/yourusername/deepseek-monitor",
+  "description": "实时监控DeepSeek API余额 | GitHub: github.com/JoWer22/deepseek-monitor",
   
   "icons": {
     "16": "assets/icon16.png",
@@ -22,7 +22,15 @@
     "notifications"
   ],
 
+  "optional_permissions": [
+    "tabs"
+  ],
+
   "background": {
     "service_worker": "js/background.js"
-  }
+  },
+
+  "host_permissions": [
+    "https://api.deepseek.com/*"
+  ]
 }

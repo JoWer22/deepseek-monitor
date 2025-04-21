@@ -217,6 +217,12 @@ body {
   color: var(--error);
 }
 
+.error-message {
+  color: var(--error);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 .last-updated {
   font-size: 12px;
   color: var(--text-light);

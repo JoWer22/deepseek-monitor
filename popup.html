@@ -69,7 +69,7 @@
         <span id="updateTime">最后更新: --</span>
       </div>
 
-      <button id="refreshBtn" class="refresh-btn">
+      <button id="refreshBtn" class="refresh-btn" disabled>
         <svg width="16" height="16" viewBox="0 0 24 24">
           <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4A8 8 0 004 12a8 8 0 008 8c3.73 0 6.84-2.55 7.73-6h-2.08A6 6 0 0112 18a6 6 0 01-6-6 6 6 0 016-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
         </svg>
@@ -90,13 +90,16 @@
 
       <div class="setting-group">
         <label for="apiKeyInput">API Key</label>
-        <input type="password" id="apiKeyInput" placeholder="输入您的DeepSeek API Key">
+        <input type="password" id="apiKeyInput" placeholder="输入您的DeepSeek API Key" required>
+        <small id="apiKeyError" class="error-message" style="display:none;">API Key 无效</small>
       </div>
 
       <div class="setting-group">
         <label for="refreshInterval">刷新间隔 (分钟)</label>
         <input type="number" id="refreshInterval" min="1" max="1440" value="5">
       </div>
+
+      <div id="apiKeyStatus" class="status-message"></div>
 
       <button id="saveBtn" class="primary-btn">保存设置</button>
       <div id="settingsStatus" class="status-message"></div>
