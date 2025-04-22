@@ -1,18 +1,18 @@
 # 🔍 DeepSeek API 余额监控（浏览器插件）
-#### 自己用AI捣鼓出来的小玩意，时间上花了1个小时调整。
+#### 自己用AI捣鼓出来的小玩意，继续改进ing。
 ![插件截图](assets/screenshot.png)
 
 ## 版本说明 (Changelog)
-## v1.0.1
-🎉 初始版本发布
-- 实时显示 DeepSeek API 余额。
-- 支持手动刷新余额。
-- 支持设置 API Key 和刷新间隔。
-- 自动刷新余额数据。
-- 提供友好的错误提示和状态显示
+## v2.0
+🎉 稳定版本V2.0发布
+- 实时显示 DeepSek API 余额。
+- 添加解密失败的重试机制，提升插件的稳定性。
+- 支持从本地存储解密并加载 API Key，确保安全性和兼容性。
+- 保持 Service Worker 活跃的机制优化，避免插件在后台被意外终止。
+- 优化日志输出，便于调试和问题排查。
 
 ## 📦 发布版本（Releases）
-👉 [releases](https://github.com/JoWer22/deepseek-monitor/releases)
+👉 [releases--V2.0](https://github.com/JoWer22/deepseek-monitor/releases)
 
 ## 🚀 安装方法
 1. **下载 ZIP**（点右边 `↓ Code` → `Download ZIP`）
