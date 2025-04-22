@@ -1,5 +1,5 @@
 # 🔍 DeepSeek API 余额监控（浏览器插件）
-#### 自己用AI捣鼓出来的小玩意，继续改进ing。
+#### 自己用AI捣鼓出来的小玩意，继续 维护ing。
 ![插件截图](assets/screenshot.png)
 
 ## 版本说明 (Changelog)
