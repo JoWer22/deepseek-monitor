@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DeepSeek Monitor",
-  "version": "1.0.1",
+  "version": "2.0",
   "description": "实时监控DeepSeek API余额 | GitHub: github.com/JoWer22/deepseek-monitor",
   
   "icons": {

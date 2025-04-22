@@ -26,7 +26,14 @@ class BalanceController {
   async init() {
     try {
       console.log('初始化开始'); // 调试日志
-      const { apiKey } = await chrome.storage.local.get('apiKey');
+
+      // 从本地存储读取 API Key 和刷新间隔
+      const { apiKey, refreshInterval } = await chrome.storage.local.get(['apiKey', 'refreshInterval']);
+
+      // 设置刷新间隔输入框的值
+      const interval = refreshInterval || 5; // 如果本地存储没有值，默认为 5
+      this.elements.refreshInterval.value = interval;
+
       if (!apiKey) {
         this.showApiKeyStatus('API Key 未设置', 'error');
         this.elements.refreshBtn.disabled = true; // 禁用刷新按钮
@@ -34,8 +41,12 @@ class BalanceController {
       } else {
         this.showApiKeyStatus('API Key 已设置', 'success');
         this.elements.refreshBtn.disabled = false; // 启用刷新按钮
+
+        // 自动刷新余额
+        console.log('检测到已保存的 API Key，自动刷新余额...');
         await this.refreshBalance(true); // 初始化时刷新余额
       }
+
       console.log('初始化完成'); // 调试日志
     } catch (error) {
       console.error('初始化失败:', error);
@@ -98,11 +109,6 @@ class BalanceController {
     const apiKey = this.elements.apiKeyInput.value.trim();
     let refreshInterval = parseInt(this.elements.refreshInterval.value, 10);
 
-    if (!apiKey) {
-      this.showError('API Key 不能为空');
-      return;
-    }
-
     if (isNaN(refreshInterval) || refreshInterval < 1 || refreshInterval > 1440) {
       this.showError('刷新间隔必须在 1 到 1440 分钟之间');
       return;
@@ -111,22 +117,31 @@ class BalanceController {
     this.elements.saveBtn.disabled = true;
 
     try {
-      // 验证 API Key 是否有效
-      const response = await this.sendMessage('validateApiKey', { apiKey });
-      if (!response.success) {
-        throw new Error('API Key 无效，请检查后重试');
+      // 如果用户输入了 API Key，则验证并保存
+      if (apiKey) {
+        const response = await this.sendMessage('validateApiKey', { apiKey });
+        if (!response.success) {
+          throw new Error('API Key 无效，请检查后重试');
+        }
+
+        // 保存 API Key
+        await this.sendMessage('setApiKey', { key: apiKey });
+
+        // 清空旧的余额显示
+        this.updateUI(null);
+        this.showApiKeyStatus('API Key 已设置', 'success');
       }
 
-      // 如果验证成功，保存 API Key 和刷新间隔
-      await this.sendMessage('setApiKey', { key: apiKey });
+      // 保存刷新间隔
       await this.sendMessage('setRefreshInterval', { interval: refreshInterval });
 
       this.showSuccess('设置已保存');
-      this.showApiKeyStatus('API Key 已设置', 'success');
 
-      // 跳转到主视图并刷新余额
-      this.showMainView();
-      await this.refreshBalance();
+      // 如果 API Key 被设置，刷新余额
+      if (apiKey) {
+        this.showMainView();
+        await this.refreshBalance();
+      }
     } catch (error) {
       console.error('保存设置失败:', error);
       this.showError('保存设置失败: ' + error.message);
@@ -208,4 +223,33 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refreshBtn').addEventListener('click', () => controller.refreshBalance());
   document.getElementById('settingsBtn').addEventListener('click', () => controller.showSettings());
   document.getElementById('backBtn').addEventListener('click', () => controller.showMainView());
+
+  const emailLink = document.querySelector('.email-link');
+
+  emailLink.addEventListener('click', (event) => {
+    event.preventDefault(); // 阻止默认跳转行为
+
+    const email = emailLink.getAttribute('data-email');
+    if (!email) return;
+
+    // 将邮箱地址复制到剪贴板
+    navigator.clipboard.writeText(email).then(() => {
+      // 添加动画效果
+      emailLink.classList.add('copied');
+      emailLink.textContent = 'copied！';
+
+      // 恢复原始状态
+      setTimeout(() => {
+        emailLink.classList.remove('copied');
+        emailLink.innerHTML = `
+          <svg class="footer-icon" viewBox="0 0 24 24">
+            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+          </svg>
+           Email
+        `;
+      }, 2000); // 2秒后恢复
+    }).catch((error) => {
+      console.error('复制失败:', error);
+    });
+  });
 });
